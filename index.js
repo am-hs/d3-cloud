@@ -9,6 +9,7 @@ var cloudRadians = Math.PI / 180,
 
 module.exports = function() {
   var size = [256, 256],
+      debug = false,
       text = cloudText,
       font = cloudFont,
       fontSize = cloudFontSize,
@@ -23,15 +24,16 @@ module.exports = function() {
       timer = null,
       random = Math.random,
       cloud = {},
-      canvas = cloudCanvas;
+      canvas = cloudCanvas
+      shapeImage = null;
 
   cloud.canvas = function(_) {
     return arguments.length ? (canvas = functor(_), cloud) : canvas;
   };
 
   cloud.start = function() {
-    var contextAndRatio = getContext(canvas()),
-        board = zeroArray((size[0] >> 5) * size[1]),
+    var contextAndRatio = getWordsContext(canvas()),
+        board = getBoard(),
         bounds = null,
         n = words.length,
         i = -1,
@@ -50,6 +52,29 @@ module.exports = function() {
     if (timer) clearInterval(timer);
     timer = setInterval(step, 0);
     step();
+
+    // test
+    if (debug) {
+      var width = (size[0] >> 5) << 5;
+      var testContext = getContext(canvas(), width, size[1]);
+      var imageData = testContext.createImageData(width, size[1]);
+      for(var i=0; i<board.length; i++) {
+        for (var j=0; j<32; j++) {
+          var pixel = (i*32+j);
+          var x = pixel % width;
+          var y = ~~(pixel / width);
+          var index = (y * width + x) * 4;
+          var boardIndex = ~~(index / 4 / 32);
+          var rgb = board[boardIndex] & (1 << 31-j) ? 255 : 0;
+          imageData.data[index] = rgb;
+          imageData.data[index+1] = rgb;
+          imageData.data[index+2] = rgb;
+          imageData.data[index+3] = 255;
+          delete index;
+        }
+      }
+      testContext.putImageData(imageData, 0, 0);
+    }
 
     return cloud;
 
@@ -85,17 +110,48 @@ module.exports = function() {
     return cloud;
   };
 
-  function getContext(canvas) {
-    canvas.width = canvas.height = 1;
-    var ratio = Math.sqrt(canvas.getContext("2d").getImageData(0, 0, 1, 1).data.length >> 2);
-    canvas.width = (cw << 5) / ratio;
-    canvas.height = ch / ratio;
+  function getBoard() {
+    var width = size[0] >> 5;
+    var board = zeroArray(width * size[1]);
+    if (!this.shapeImage) {
+      return board;
+    }
+    
+    width = width << 5;
+    var context = getContext(canvas(), width, size[1]);
+    context.drawImage(shapeImage,0,0, width, size[1]);
+    var data = context.getImageData(0, 0, width, size[1]).data;
 
-    var context = canvas.getContext("2d");
+    for (var i=0; i<data.length; i+=4*32) {
+      if (board.length <= i / (4*32)) {
+        return board;
+      }
+      var item = 0;
+      for (var j=0; j<32*4; j+=4) {
+        var flag = data[i+j] ? 1 << (31-j/4) : 0;
+        item |= flag;
+      }
+      board[i / (4*32)] = item;
+    }
+
+    return board;
+  }
+
+  function getWordsContext(canvas) {
+    canvas.width = canvas.height = 1;    
+    var ratio = Math.sqrt(canvas.getContext("2d").getImageData(0, 0, 1, 1).data.length >> 2);
+    var context = getContext(canvas, (cw << 5) / ratio, ch / ratio);
     context.fillStyle = context.strokeStyle = "red";
     context.textAlign = "center";
 
     return {context: context, ratio: ratio};
+  }
+
+  function getContext(canvas, width, height) {
+    canvas.width = width;
+    canvas.height = height;
+
+    return canvas.getContext("2d");
   }
 
   function place(board, tag, bounds) {
@@ -195,6 +251,10 @@ module.exports = function() {
   cloud.random = function(_) {
     return arguments.length ? (random = _, cloud) : random;
   };
+
+  cloud.shapeImage = function(_) {
+    return arguments.length ? (shapeImage = _, cloud) : shapeImage;
+  }
 
   cloud.on = function() {
     var value = event.on.apply(event, arguments);

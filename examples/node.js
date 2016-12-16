@@ -7,6 +7,9 @@ var words = ["Hello", "world", "normally", "you", "want", "more", "words", "than
       return {text: d, size: 10 + Math.random() * 90};
     });
 
+var shapeImage = document.createElement('img');
+shapeImage.src = "./shape.png";
+
 cloud().size([960, 500])
     .canvas(function() { return new Canvas(1, 1); })
     .words(words)
@@ -14,6 +17,7 @@ cloud().size([960, 500])
     .rotate(function() { return ~~(Math.random() * 2) * 90; })
     .font("Impact")
     .fontSize(function(d) { return d.size; })
+    .shapeImage(shapeImage)
     .on("end", end)
     .start();
 
