@@ -86,11 +86,11 @@ module.exports = function() {
         d.x = (size[0] * (random() + .5)) >> 1;
         d.y = (size[1] * (random() + .5)) >> 1;
         cloudSprite(contextAndRatio, d, data, i);
+        if(!bounds) bounds = [{x: d.x + d.x0, y: d.y + d.y0}, {x: d.x + d.x1, y: d.y + d.y1}];
         if (d.hasText && place(board, d, bounds)) {
           tags.push(d);
           event.word(d);
-          if (bounds) cloudBounds(bounds, d);
-          else bounds = [{x: d.x + d.x0, y: d.y + d.y0}, {x: d.x + d.x1, y: d.y + d.y1}];
+          cloudBounds(bounds, d);
           // Temporary hack
           d.x -= size[0] >> 1;
           d.y -= size[1] >> 1;
