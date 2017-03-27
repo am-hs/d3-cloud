@@ -93,6 +93,8 @@ module.exports = function() {
           // Temporary hack
           d.x -= size[0] >> 1;
           d.y -= size[1] >> 1;
+        } else {
+          bounds = [{x: 0, y: 0}, {x: size[0], y: size[1] }];
         }
       }
       if (i >= n) {

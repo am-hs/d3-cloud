@@ -1,6 +1,6 @@
 {
-  "name": "d3-cloud",
-  "version": "1.2.2",
+  "name": "@ardimedia/d3-cloud",
+  "version": "1.2.6",
   "description": "Generate word clouds in JavaScript.",
   "keywords": [
     "word",
@@ -21,13 +21,15 @@
   },
   "main": "index.js",
   "scripts": {
-    "build": "mkdir -p build && browserify --standalone d3.layout.cloud index.js > build/d3.layout.cloud.js"
+    "build": "browserify --standalone d3.layout.cloud index.js > build/d3.layout.cloud.js",
+    "publish:patch": "npm version patch --no-git-tag && npm publish"
   },
   "dependencies": {
     "d3-dispatch": "0.2.x"
   },
   "devDependencies": {
     "browserify": "^11.2.0",
-    "d3": "^4.4.0"
+    "d3": "^4.4.0",
+    "fs-extra": "^2.1.2"
   }
 }
